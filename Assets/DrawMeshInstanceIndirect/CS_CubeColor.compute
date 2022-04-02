@@ -1,0 +1,26 @@
+#pragma kernel CSMain
+
+struct my_struct
+{
+    float4 color;
+    float3 position;
+    float3 scale;
+};
+
+int CountX;
+int CountY;
+int CountZ;
+
+RWStructuredBuffer<my_struct> MyBuffer;
+
+[numthreads(1,1,1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    int index = id.x + id.y * CountX + id.z * CountX * CountY;
+    my_struct data = MyBuffer[index];
+    // カラーは0~1で表す。int同士の除算にならないようにfloatにする
+    data.color = float4(id.x / (float)CountX, id.y / (float)CountY, id.z / (float)CountZ, 1);
+    data.position = float3(id.x - CountX * 0.5, id.y - CountY * 0.5, id.z - CountZ * 0.5);
+    data.scale = float3(0.5, 0.5, 0.5);
+    MyBuffer[index] = data;
+}
