@@ -22,6 +22,7 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
         }
         
         private int _kernel;
+        // computeShaderとレンダリングで使用するバッファ。
         private ComputeBuffer _buffer;
 
         // DrawMeshInstancedIndirectに渡すバッファ。
@@ -41,13 +42,12 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
             
             // computeShaderで使用するバッファをレンダリング用のシェーダーに渡す。CPUを介せずにバッファをやり取りするので高速。
             material.SetBuffer("_Buffer", _buffer);
+            // バッファの内容を更新しないのでStart一度だけ呼び出す。
+            computeShader.Dispatch(_kernel, countX, countY, countZ);
         }
 
         private void Update()
         {
-            // 
-            computeShader.Dispatch(_kernel, countX, countY, countZ);
-            
             // 毎フレーム呼び出す必要がある
             Graphics.DrawMeshInstancedIndirect(mesh, 0, material, _bounds, _bufferWithArgs);
         }
