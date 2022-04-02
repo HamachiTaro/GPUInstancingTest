@@ -14,14 +14,18 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
         [SerializeField] private int countY;
         [SerializeField] private int countZ;
 
+        /// <summary>
+        /// C#, ComputeShader, レンダリング用のshaderで共通のstruct。
+        /// </summary>
         private struct MyStruct
         {
             public Vector4 color;
             public Vector3 position;
             public Vector3 scale;
         }
-        
+
         private int _kernel;
+
         // computeShaderとレンダリングで使用するバッファ。
         private ComputeBuffer _buffer;
 
@@ -31,15 +35,11 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
 
         private void Start()
         {
-            _kernel = computeShader.FindKernel("CSMain");
-            computeShader.SetInt("CountX", countX);
-            computeShader.SetInt("CountY", countY);
-            computeShader.SetInt("CountZ", countZ);
-
+            SetUpComputeShader();
             CreateBuffer();
             CreateBounds();
             CreateBufferArgs();
-            
+
             // computeShaderで使用するバッファをレンダリング用のシェーダーに渡す。CPUを介せずにバッファをやり取りするので高速。
             material.SetBuffer("_Buffer", _buffer);
             // バッファの内容を更新しないのでStart一度だけ呼び出す。
@@ -56,6 +56,17 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
         {
             _buffer.Dispose();
             _bufferWithArgs.Dispose();
+        }
+
+        /// <summary>
+        /// Compute Shaderの設定
+        /// </summary>
+        private void SetUpComputeShader()
+        {
+            _kernel = computeShader.FindKernel("CSMain");
+            computeShader.SetInt("CountX", countX);
+            computeShader.SetInt("CountY", countY);
+            computeShader.SetInt("CountZ", countZ);
         }
 
         /// <summary>
@@ -85,7 +96,7 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
             // 1番目はインスタンス数
             args[1] = (uint)(countX * countY * countZ);
             // 2番目以降は0でいいらしい。何も設定するかがイマイチわからない。
-            
+
             _bufferWithArgs = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
             _bufferWithArgs.SetData(args);
         }
