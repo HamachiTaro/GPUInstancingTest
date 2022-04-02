@@ -16,11 +16,11 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
 
         private struct MyStruct
         {
-            public float red;
-            public float green;
-            public float blue;
+            public Vector4 color;
+            public Vector3 position;
+            public Vector3 scale;
         }
-
+        
         private int _kernel;
         private ComputeBuffer _buffer;
 
@@ -31,14 +31,23 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
         private void Start()
         {
             _kernel = computeShader.FindKernel("CSMain");
+            computeShader.SetInt("CountX", countX);
+            computeShader.SetInt("CountY", countY);
+            computeShader.SetInt("CountZ", countZ);
 
             CreateBuffer();
             CreateBounds();
             CreateBufferArgs();
+            
+            // computeShaderで使用するバッファをレンダリング用のシェーダーに渡す。CPUを介せずにバッファをやり取りするので高速。
+            material.SetBuffer("_Buffer", _buffer);
         }
 
         private void Update()
         {
+            // 
+            computeShader.Dispatch(_kernel, countX, countY, countZ);
+            
             // 毎フレーム呼び出す必要がある
             Graphics.DrawMeshInstancedIndirect(mesh, 0, material, _bounds, _bufferWithArgs);
         }
@@ -58,7 +67,7 @@ namespace GPUInstancingTest.DrawMeshInstancedIndirect
             // バッファを作成。
             _buffer = new ComputeBuffer(count, Marshal.SizeOf<MyStruct>());
             // 作成したバッファをComputeShaderのバッファと紐づける
-            computeShader.SetBuffer(_kernel, "ColorBuffer", _buffer);
+            computeShader.SetBuffer(_kernel, "MyBuffer", _buffer);
         }
 
         private void CreateBounds()
