@@ -1,0 +1,16 @@
+#pragma kernel CSMain
+
+struct my_struct
+{
+    float red;
+    float green;
+    float blue;
+};
+
+RWTexture2D<my_struct> ColorBuffer;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // ColorBuffer
+}
